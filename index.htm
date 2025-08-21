@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Gerador de QR Code</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+</head>
+<style>
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.botoes {
+ display: flex;
+  flex-direction: row;
+    position: fixed;
+  top: 0px;
+  left: 0px;
+right:0;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  z-index: 999;
+  flex-wrap: wrap; /* Para permitir quebra de linha */
+  background:#222;
+  padding:10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  justify-content: center;
+}
+
+
+/* Estilo base compartilhado entre os botões */
+.botoes button {
+  width: 50px;
+  height: 50px;
+  background: #eee;
+  border: 2px solid #000;
+  font-size: 24px;
+  cursor: pointer;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: black;
+}
+
+.Proc-link-container {
+            display: flex;
+            flex-direction: column; /* Altera a direção para que os cards fiquem um abaixo do outro */
+            align-items: center; /* Centraliza os cards horizontalmente */
+            gap: 2rem;
+            max-width: 1200px; /* Aumentei a largura máxima do container principal */
+            width: 100%;
+            
+        }
+        .Proc-link-card {
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            flex: 1; /* Permite que o card se expanda para preencher o espaço */
+            min-width: 300px; /* Garante que os cards não fiquem muito pequenos */
+            text-align: center;
+        }
+        h4 {
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 1.5rem;
+        }
+        .Proc-link-textarea {
+            width: 70%;
+            border-radius: 0.5rem;
+            border: 1px solid #d1d5db;
+            padding: 0.75rem;
+            resize: vertical;
+            min-height: 100px;
+            margin-bottom: 1rem;
+
+        }
+        .Proc-link-label {
+            display: block;
+            text-align: left;
+            font-weight: 500;
+            color: #4b5563;
+            margin-bottom: 0.5rem;
+        }
+        .Proc-link-display-box {
+            background-color: #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            word-break: break-all;
+            text-align: left;
+            color: #6b7280;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+        }
+        .Proc-link-button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+        .Proc-link-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        /* Cor dos botões de "Gerar QR Code" */
+        .Proc-link-button-primary {
+            background-color: #059669; /* emerald-600 */
+            color: #ffffff;
+        }
+        /* Cor do hover dos botões de "Gerar QR Code" */
+        .Proc-link-button-primary:hover:not(:disabled) {
+            background-color: #047857; /* emerald-700 */
+            transform: translateY(-1px);
+        }
+        /* Cor dos botões de "Limpar" (agora em vermelho) */
+        .Proc-link-button-clear {
+            background-color: #ef4444; /* red-500 */
+            color: #ffffff;
+        }
+        /* Cor do hover dos botões de "Limpar" */
+        .Proc-link-button-clear:hover:not(:disabled) {
+            background-color: #dc2626; /* red-600 */
+            transform: translateY(-1px);
+        }
+        /* Cor do botão de "Copiar Link" (agora em azul) */
+        .Proc-link-button-copy {
+            background-color: #3b82f6; /* blue-500 */
+            color: #ffffff;
+        }
+        /* Cor do hover do botão de "Copiar Link" */
+        .Proc-link-button-copy:hover:not(:disabled) {
+            background-color: #2563eb; /* blue-600 */
+            transform: translateY(-1px);
+        }
+        .Proc-link-button-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .Proc-link-message-box {
+            position: fixed;
+            bottom: 2rem;
+            background-color: #10b981;
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            display: none;
+            z-index: 1000;
+            animation: fadeIn 0.5s ease-out;
+        }
+        .Proc-link-message-box.error {
+            background-color: #ef4444;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Estilos do Modal */
+        .Proc-link-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Fundo preto sem transparência */
+            background-color: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            z-index: 999;
+        }
+        .Proc-link-modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .Proc-link-modal-content {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 1rem;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .Proc-link-modal-close-button {
+            /* Posição fixa no canto superior direito da tela */
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background-color: #ef4444; /* red-500 */
+            color: #ffffff;
+            border: none;
+            width: 4rem;
+            height: 4rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            border-radius: 50%; /* Torna o botão circular */
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+            z-index: 1000; /* Garante que o botão fique acima do modal */
+        }
+        .Proc-link-modal-close-button:hover {
+            background-color: #dc2626; /* red-600 */
+            transform: scale(1.05);
+        }
+        #Proc-link-qrcode-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+</style>
+<body>
+<div class="botoes" id="botoes">
+  <button onclick="window.location.href='https://armandodecampos.github.io/Job/'">
+   <i class="fas fa-home"></i>
+  </button>
+</div>
+<br>
+<br>
+<br>
+<br>
+
+<div class="Proc-link-container">
+        
+        <!-- Contêiner do Extrator de Link (EXISTENTE) -->
+        <div class="Proc-link-card">
+            <h4 class="text-2xl font-semibold">Extrator e Gerador de QR Code (para Link)</h4>
+            
+            <textarea
+                id="Proc-link-textarea"
+                class="Proc-link-textarea"
+                placeholder="Cole o texto que contém o link aqui..."
+            ></textarea>
+            
+            <div class="mb-4">
+                <label class="Proc-link-label">Link Encontrado:</label>
+                <div
+                    id="Proc-link-display"
+                    class="Proc-link-display-box"
+                >
+                    Nenhum link encontrado
+                </div>
+            </div>
+            <br>
+            
+            <div class="Proc-link-button-group">
+                <button
+                    id="Proc-link-copy-button"
+                    class="Proc-link-button Proc-link-button-copy"
+                    disabled
+                >
+                    Copiar Link
+                </button>
+                <button
+                    id="Proc-link-show-qr-button"
+                    class="Proc-link-button Proc-link-button-primary"
+                    disabled
+                >
+                    Gerar QR Code
+                </button>
+                <button
+                    id="Proc-link-clear-button"
+                    class="Proc-link-button Proc-link-button-clear"
+                >
+                    Limpar
+                </button>
+            </div>
+        </div>
+
+        <!-- NOVO Contêiner para o Gerador de Texto Livre -->
+        <div class="Proc-link-card">
+            <h4 class="text-2xl font-semibold">Gerador de QR Code (para Texto)</h4>
+            
+            <textarea
+                id="Proc-link-text-textarea"
+                class="Proc-link-textarea"
+                placeholder="Cole ou digite qualquer texto aqui..."
+            ></textarea>
+            
+            <div class="Proc-link-button-group">
+                <button
+                    id="Proc-link-show-text-qr-button"
+                    class="Proc-link-button Proc-link-button-primary"
+                    disabled
+                >
+                    Gerar QR Code
+                </button>
+                <button
+                    id="Proc-link-clear-text-button"
+                    class="Proc-link-button Proc-link-button-clear"
+                >
+                    Limpar
+                </button>
+            </div>
+        </div>
+        
+    </div>
+    
+    <!-- Modal para exibir o QR code -->
+    <div id="Proc-link-modal" class="Proc-link-modal-overlay">
+        <!-- O botão foi movido para fora do modal-content -->
+        <button id="Proc-link-close-modal-button" class="Proc-link-modal-close-button">&times;</button>
+        <div class="Proc-link-modal-content">
+            <div id="Proc-link-qrcode-display"></div>
+        </div>
+    </div>
+    
+    <!-- Caixa de mensagem para feedback do usuário -->
+    <div id="Proc-link-message-box" class="Proc-link-message-box"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Referências para os elementos do Extrator de Link
+            const linkTextarea = document.getElementById('Proc-link-textarea');
+            const linkDisplay = document.getElementById('Proc-link-display');
+            const copyLinkButton = document.getElementById('Proc-link-copy-button');
+            const showLinkQrButton = document.getElementById('Proc-link-show-qr-button');
+            const clearLinkButton = document.getElementById('Proc-link-clear-button');
+            
+            // Referências para os elementos do Gerador de Texto Livre (NOVO)
+            const textTextarea = document.getElementById('Proc-link-text-textarea');
+            const showTextQrButton = document.getElementById('Proc-link-show-text-qr-button');
+            const clearTextButton = document.getElementById('Proc-link-clear-text-button');
+            
+            // Referências para os elementos do Modal e Mensagens
+            const messageBox = document.getElementById('Proc-link-message-box');
+            const modal = document.getElementById('Proc-link-modal');
+            const closeModalButton = document.getElementById('Proc-link-close-modal-button');
+            const qrcodeDisplay = document.getElementById('Proc-link-qrcode-display');
+
+            // Função para extrair o primeiro URL do texto usando uma expressão regular
+            const extractLink = (text) => {
+                const urlRegex = /(https?:\/\/[^\s]+)/;
+                const match = text.match(urlRegex);
+                return match ? match[0] : null;
+            };
+            
+            // Função para gerar e exibir o QR code no modal
+            const generateAndShowQrCode = (content) => {
+                // Limpa o conteúdo anterior do QR code
+                qrcodeDisplay.innerHTML = '';
+                
+                // Calcula o tamanho do QR code com base no tamanho da janela para garantir que ele caiba
+                const size = Math.min(Math.min(window.innerWidth, window.innerHeight) * 0.8, 400);
+
+                // Cria uma nova instância de QRCode com o tamanho calculado
+                new QRCode(qrcodeDisplay, {
+                    text: content,
+                    width: size,
+                    height: size,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                // Exibe o modal
+                modal.classList.add('visible');
+            };
+
+            // Função para exibir uma mensagem temporária
+            const showMessage = (message, isError = false, duration = 3000) => {
+                messageBox.textContent = message;
+                messageBox.classList.remove('error');
+                if (isError) {
+                    messageBox.classList.add('error');
+                }
+                messageBox.style.display = 'block';
+                setTimeout(() => {
+                    messageBox.style.display = 'none';
+                }, duration);
+            };
+
+            // ---- Lógica para o Extrator de Link ----
+            linkTextarea.addEventListener('input', () => {
+                const text = linkTextarea.value;
+                const link = extractLink(text);
+
+                if (link) {
+                    linkDisplay.textContent = link;
+                    copyLinkButton.disabled = false;
+                    showLinkQrButton.disabled = false;
+                    // Gera o QR code automaticamente
+                    generateAndShowQrCode(link);
+                } else {
+                    linkDisplay.textContent = 'Nenhum link encontrado';
+                    copyLinkButton.disabled = true;
+                    showLinkQrButton.disabled = true;
+                    // Oculta o modal se não houver link
+                    modal.classList.remove('visible');
+                    // Exibe a mensagem de erro se o campo não estiver vazio, mas não for um link
+                    if (text.trim().length > 0) {
+                        showMessage('O texto colado não contém um link válido.', true, 5000);
+                    }
+                }
+            });
+
+            copyLinkButton.addEventListener('click', () => {
+                const link = linkDisplay.textContent;
+                if (link && link !== 'Nenhum link encontrado') {
+                    // Usa document.execCommand para compatibilidade com iframes
+                    const tempInput = document.createElement('textarea');
+                    tempInput.value = link;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    try {
+                        document.execCommand('copy');
+                        showMessage('Link copiado para a área de transferência!');
+                    } catch (err) {
+                        showMessage('Falha ao copiar o link. Tente manualmente.', true, 5000);
+                    }
+                    document.body.removeChild(tempInput);
+                }
+            });
+
+            showLinkQrButton.addEventListener('click', () => {
+                const link = linkDisplay.textContent;
+                if (link && link !== 'Nenhum link encontrado') {
+                    generateAndShowQrCode(link);
+                }
+            });
+
+            clearLinkButton.addEventListener('click', () => {
+                linkTextarea.value = '';
+                linkDisplay.textContent = 'Nenhum link encontrado';
+                copyLinkButton.disabled = true;
+                showLinkQrButton.disabled = true;
+                showMessage('Formulário de link limpo.');
+            });
+
+            // ---- Lógica para o Gerador de Texto Livre (NOVA) ----
+            textTextarea.addEventListener('input', () => {
+                const text = textTextarea.value;
+                showTextQrButton.disabled = text.trim().length === 0;
+            });
+
+            showTextQrButton.addEventListener('click', () => {
+                const text = textTextarea.value;
+                if (text.trim().length > 0) {
+                    generateAndShowQrCode(text);
+                }
+            });
+
+            clearTextButton.addEventListener('click', () => {
+                textTextarea.value = '';
+                showTextQrButton.disabled = true;
+                modal.classList.remove('visible');
+                showMessage('Formulário de texto limpo.');
+            });
+
+            // ---- Lógica Comum do Modal ----
+            closeModalButton.addEventListener('click', () => {
+                modal.classList.remove('visible');
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('visible');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
