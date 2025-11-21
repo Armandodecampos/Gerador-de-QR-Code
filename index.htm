@@ -57,7 +57,7 @@ right:0;
             gap: 2rem;
             max-width: 1200px; /* Aumentei a largura máxima do container principal */
             width: 100%;
-            
+
         }
         .Proc-link-card {
             background-color: #ffffff;
@@ -142,6 +142,16 @@ right:0;
         /* Cor do hover do botão de "Copiar Link" */
         .Proc-link-button-copy:hover:not(:disabled) {
             background-color: #2563eb; /* blue-600 */
+            transform: translateY(-1px);
+        }
+        /* Cor do botão de "Abrir Link" (agora em roxo) */
+        .Proc-link-button-open {
+            background-color: #8b5cf6; /* violet-500 */
+            color: #ffffff;
+        }
+        /* Cor do hover do botão de "Abrir Link" */
+        .Proc-link-button-open:hover:not(:disabled) {
+            background-color: #7c3aed; /* violet-600 */
             transform: translateY(-1px);
         }
         .Proc-link-button-disabled {
@@ -242,17 +252,17 @@ right:0;
 <br>
 
 <div class="Proc-link-container">
-        
+
         <!-- Contêiner do Extrator de Link (EXISTENTE) -->
         <div class="Proc-link-card">
             <h4 class="text-2xl font-semibold">Extrator e Gerador de QR Code (para Link)</h4>
-            
+
             <textarea
                 id="Proc-link-textarea"
                 class="Proc-link-textarea"
                 placeholder="Cole o texto que contém o link aqui..."
             ></textarea>
-            
+
             <div class="mb-4">
                 <label class="Proc-link-label">Link Encontrado:</label>
                 <div
@@ -263,8 +273,15 @@ right:0;
                 </div>
             </div>
             <br>
-            
+
             <div class="Proc-link-button-group">
+                <button
+                    id="Proc-link-open-button"
+                    class="Proc-link-button Proc-link-button-open"
+                    disabled
+                >
+                    Abrir
+                </button>
                 <button
                     id="Proc-link-copy-button"
                     class="Proc-link-button Proc-link-button-copy"
@@ -291,13 +308,13 @@ right:0;
         <!-- NOVO Contêiner para o Gerador de Texto Livre -->
         <div class="Proc-link-card">
             <h4 class="text-2xl font-semibold">Gerador de QR Code (para Texto)</h4>
-            
+
             <textarea
                 id="Proc-link-text-textarea"
                 class="Proc-link-textarea"
                 placeholder="Cole ou digite qualquer texto aqui..."
             ></textarea>
-            
+
             <div class="Proc-link-button-group">
                 <button
                     id="Proc-link-show-text-qr-button"
@@ -314,9 +331,9 @@ right:0;
                 </button>
             </div>
         </div>
-        
+
     </div>
-    
+
     <!-- Modal para exibir o QR code -->
     <div id="Proc-link-modal" class="Proc-link-modal-overlay">
         <!-- O botão foi movido para fora do modal-content -->
@@ -325,7 +342,7 @@ right:0;
             <div id="Proc-link-qrcode-display"></div>
         </div>
     </div>
-    
+
     <!-- Caixa de mensagem para feedback do usuário -->
     <div id="Proc-link-message-box" class="Proc-link-message-box"></div>
 
@@ -334,15 +351,16 @@ right:0;
             // Referências para os elementos do Extrator de Link
             const linkTextarea = document.getElementById('Proc-link-textarea');
             const linkDisplay = document.getElementById('Proc-link-display');
+            const openLinkButton = document.getElementById('Proc-link-open-button');
             const copyLinkButton = document.getElementById('Proc-link-copy-button');
             const showLinkQrButton = document.getElementById('Proc-link-show-qr-button');
             const clearLinkButton = document.getElementById('Proc-link-clear-button');
-            
+
             // Referências para os elementos do Gerador de Texto Livre (NOVO)
             const textTextarea = document.getElementById('Proc-link-text-textarea');
             const showTextQrButton = document.getElementById('Proc-link-show-text-qr-button');
             const clearTextButton = document.getElementById('Proc-link-clear-text-button');
-            
+
             // Referências para os elementos do Modal e Mensagens
             const messageBox = document.getElementById('Proc-link-message-box');
             const modal = document.getElementById('Proc-link-modal');
@@ -355,12 +373,12 @@ right:0;
                 const match = text.match(urlRegex);
                 return match ? match[0] : null;
             };
-            
+
             // Função para gerar e exibir o QR code no modal
             const generateAndShowQrCode = (content) => {
                 // Limpa o conteúdo anterior do QR code
                 qrcodeDisplay.innerHTML = '';
-                
+
                 // Calcula o tamanho do QR code com base no tamanho da janela para garantir que ele caiba
                 const size = Math.min(Math.min(window.innerWidth, window.innerHeight) * 0.8, 400);
 
@@ -397,12 +415,14 @@ right:0;
 
                 if (link) {
                     linkDisplay.textContent = link;
+                    openLinkButton.disabled = false;
                     copyLinkButton.disabled = false;
                     showLinkQrButton.disabled = false;
                     // Gera o QR code automaticamente
-                    generateAndShowQrCode(link);
+                    // generateAndShowQrCode(link);
                 } else {
                     linkDisplay.textContent = 'Nenhum link encontrado';
+                    openLinkButton.disabled = true;
                     copyLinkButton.disabled = true;
                     showLinkQrButton.disabled = true;
                     // Oculta o modal se não houver link
@@ -411,6 +431,13 @@ right:0;
                     if (text.trim().length > 0) {
                         showMessage('O texto colado não contém um link válido.', true, 5000);
                     }
+                }
+            });
+
+            openLinkButton.addEventListener('click', () => {
+                const link = linkDisplay.textContent;
+                if (link && link !== 'Nenhum link encontrado') {
+                    window.open(link, '_blank');
                 }
             });
 
@@ -442,6 +469,7 @@ right:0;
             clearLinkButton.addEventListener('click', () => {
                 linkTextarea.value = '';
                 linkDisplay.textContent = 'Nenhum link encontrado';
+                openLinkButton.disabled = true;
                 copyLinkButton.disabled = true;
                 showLinkQrButton.disabled = true;
                 showMessage('Formulário de link limpo.');
@@ -481,8 +509,3 @@ right:0;
     </script>
 </body>
 </html>
-
-
-
-
-
